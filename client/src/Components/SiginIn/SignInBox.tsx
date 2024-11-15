@@ -1,11 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Link, useLocation, } from "react-router-dom";
-import { emailIcon, googleIcon } from "../../assets/icons";
-import { useModalView } from "../../ui-library/modal/useModal";
-import { EmailSignIn, EmailSignUp } from "./EmailSignUP";
-import { useState } from "react";
-import { httpRequest } from "../../Interceptor/axiosInterceptor";
-import { url } from "../../utils/baseUrl";
+import {googleIcon } from "../../assets/icons";
 
 type SignInBoxType = {
   message?: string;
@@ -19,24 +13,13 @@ const SIGNIN_OPTIONS = [
     type: "signUp",
     image: googleIcon,
   },
-  {
-    id: 2,
-    title: "with email",
-    type: "signUp",
-    handler: "mail",
-    image: emailIcon,
-  },
 ];
 
 function SignInBox({message, typeOfLogin}: SignInBoxType) {
     
     // Google Authentication
 
-    const location = useLocation();
-    
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+  
 
     async function handleGoogleAuth() {
 
@@ -56,71 +39,6 @@ function SignInBox({message, typeOfLogin}: SignInBoxType) {
         window.location.assign(`${rootUrl}?${qs.toString()}`);
     }
 
-    
-
-    const handleEmailSignUp = async () => {
-        console.log("Email Charged", username, password);
-        
-        try {
-            const response = await httpRequest.post(`${url}/oauth/register`, {
-                username, password
-            });
-
-            console.log('Success:', response.data);
-
-
-            if(response.data.status === 201) {
-                updateModalView(false);
-                updateModalViewSignIn(true);
-            }
-            
-        }
-
-        catch(e) {
-            
-            console.error('There was a problem with your fetch operation:', e);
-            setError("User already Exit");
-
-        }
-        
-
-    }
-
-    const handleEmailLogin = async () => {
-
-        console.log("Email Charged", username, password);
-        
-        try {
-            const response = await httpRequest.post(`${url}/oauth/login`, {
-                username, password
-            });
-
-            const { access_token_server, refresh_token_server } = response.data;
-
-            
-
-            if(response.data.status === 200) {
-            
-                updateModalViewSignIn(false);
-                localStorage.setItem('access_token', access_token_server);
-                localStorage.setItem('refresh_token', refresh_token_server);
-                window.location.href = '/';
-            }
-            
-        }
-
-        catch(e) {
-            
-            console.error('There was a problem with your fetch operation:', e);
-            setError("Please Check Credentials or Please signUp first");
-
-        }
-        
-
-    }
-
-    const [modal, updateModalView] = useModalView(<EmailSignUp setUsername={setUsername} setPassword={setPassword} error={error} setError={setError} />, handleEmailSignUp, 513, "Sign Up", "SinUp");
-    const [signInModal, updateModalViewSignIn] = useModalView(<EmailSignIn setUsername={setUsername} setPassword={setPassword} error={error} setError={setError} />, handleEmailLogin, 513, "Login", "LogIn");
     
     return(
         <div
@@ -145,53 +63,22 @@ function SignInBox({message, typeOfLogin}: SignInBoxType) {
                 {message}
             </p>
 
-            {modal}
-            {signInModal}
+     
 
             {SIGNIN_OPTIONS.map((item) => {
                 return (
                     <ButtonLoginWith
                         image={item.image}
                         key={item.id}
-                        onClick={
-                            item.handler === "Google" ? handleGoogleAuth : (location.pathname !== '/auth/signin' ? (() => updateModalView(true)) : (() => updateModalViewSignIn(true)))
+                        onClick = {
+                            item.handler === "Google" ? handleGoogleAuth : null
                         }
                         text={typeOfLogin + " " + item.title}
                     />
                 );
             })}
 
-            { typeOfLogin === "Sign In" ? (
-                <p style={{ marginTop: "22px", color: "#5c5c5c" }}>
-                    No account?{" "}
-                    <Link
-                        style={{
-                            color: "#1a8917",
-                            textDecoration: "none",
-                            fontWeight: "bold",
-                            fontSize: "14px",
-                        }}
-                        to="/auth/signup"
-                    >
-                        Create one
-                    </Link>
-              </p>
-            ) : (
-                <p style={{ marginTop: "22px", color: "#5c5c5c" }}>
-                    Already have an account?{" "}
-                    <Link
-                        style={{
-                        color: "#1a8917",
-                        textDecoration: "none",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                        }}
-                        to="/auth/signin"
-                    >
-                        Sign in
-                    </Link>
-                </p>
-            )}
+
         </div>
     );
 }

@@ -19,7 +19,7 @@ export const AdminLogin = () =>   {
         return () => {
             hideNavbar(false);
         };
-    }, []);
+    });
 
     
     const [username, setUsername] = useState("");
